@@ -14,20 +14,20 @@ int color(int state) {
     }
 }
 
+const int coeff = 2;
+
 void app() {
-    simInit();
+    char data[SIM_X_SIZE / coeff][SIM_Y_SIZE / coeff];
 
-    char data[SIM_X_SIZE / 2][SIM_Y_SIZE / 2];
-
-    for (int y = 0; y < SIM_Y_SIZE / 2; ++y) {
-        for (int x = 0; x < SIM_X_SIZE / 2; ++x) {
+    for (int y = 0; y < SIM_Y_SIZE / coeff; ++y) {
+        for (int x = 0; x < SIM_X_SIZE / coeff; ++x) {
             int rnd = (simRand() % 1024 + 1024) % 1024;
             data[x][y] = rnd / 256;
         }
     }
     for (int step = 0; step < 1000000000; ++step) {
-        for (int y = 0; y < SIM_Y_SIZE / 2; ++y) {
-            for (int x = 0; x < SIM_X_SIZE / 2; ++x) {
+        for (int y = 0; y < SIM_Y_SIZE / coeff; ++y) {
+            for (int x = 0; x < SIM_X_SIZE / coeff; ++x) {
                 int state = data[x][y] & 3;
                 int newState;
                 if (state == 2) {
@@ -52,19 +52,18 @@ void app() {
                     }
                 }
                 data[x][y] += newState << 2;
-                for (int dy = 0; dy < 2; ++dy) {
-                    for (int dx = 0; dx < 2; ++dx) {
-                        simPutPixel(x * 2 + dx, y * 2 + dy, color(newState));
+                for (int dy = 0; dy < coeff; ++dy) {
+                    for (int dx = 0; dx < coeff; ++dx) {
+                        simPutPixel(x * coeff + dx, y * coeff + dy, color(newState));
                     }
                 }
             }
         }
         simFlush();
-        for (int y = 0; y < SIM_Y_SIZE / 2; ++y) {
-            for (int x = 0; x < SIM_X_SIZE / 2; ++x) {
+        for (int y = 0; y < SIM_Y_SIZE / coeff; ++y) {
+            for (int x = 0; x < SIM_X_SIZE / coeff; ++x) {
                 data[x][y] >>= 2;
             }
         }
     }
-    simExit();
 }

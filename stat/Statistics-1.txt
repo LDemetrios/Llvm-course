@@ -1,0 +1,49 @@
+61850323 : add <- phi                    
+29924669 : br <- icmp                    
+24428259 : getelementptr <- zext         
+22954559 : icmp <- add                   
+22464056 : load <- getelementptr         
+21258480 : add <- trunc                  
+21258480 : zext <- and                   
+19327045 : getelementptr <- getelementptr
+19054516 : icmp <- and                   
+18507845 : and <- load                   
+18345900 : zext <- icmp                  
+17715400 : shl <- add                    
+17715400 : and <- shl                    
+17715400 : add <- zext                   
+12679121 : call <- trunc                 
+ 9542108 : trunc <- lshr                 
+ 9509365 : call <- load                  
+ 4173580 : and <- add                    
+ 3549376 : getelementptr <- alloca       
+ 3169780 : store <- call                 
+ 3169780 : call <- shl                   
+ 3169779 : zext <- phi                   
+ 3169778 : call <- or                    
+ 2299698 : trunc <- phi                  
+ 1611645 : shl <- phi                    
+ 1611645 : getelementptr <- shl          
+ 1611645 : store <- getelementptr        
+ 1587986 : shl <- trunc                  
+ 1587986 : or <- shl                     
+  792445 : switch <- and                 
+  792445 : add <- shl                    
+  792445 : add <- load                   
+  792445 : store <- add                  
+  786432 : ashr <- load                  
+  786432 : store <- ashr                 
+   78116 : add <- add                    
+   78116 : select <- icmp                
+   32768 : ret <- call                   
+   32768 : lshr <- call                  
+   32768 : and <- trunc                  
+   32768 : store <- and                  
+    6296 : getelementptr <- phi          
+      25 : icmp <- call                  
+      25 : sub <- call                   
+      25 : sub <- load                   
+      25 : icmp <- sub                   
+      25 : sub <- sub                    
+      25 : call <- sub                   
+       1 : trunc <- call                 

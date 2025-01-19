@@ -1,0 +1,99 @@
+22876443 : add <- phi                    , icmp <- add                   
+22876443 : icmp <- add                   , br <- icmp                    
+21258480 : add <- phi                    , add <- trunc                  
+20885179 : getelementptr <- zext         , load <- getelementptr         
+20556183 : br <- icmp                    , add <- phi                    
+18507845 : load <- getelementptr         , and <- load                   
+18345900 : icmp <- and                   , zext <- icmp                  
+17715400 : add <- trunc                  , shl <- add                    
+17715400 : shl <- add                    , and <- shl                    
+17715400 : and <- shl                    , zext <- and                   
+17715400 : zext <- and                   , getelementptr <- getelementptr
+17715400 : getelementptr <- getelementptr, getelementptr <- zext         
+17715400 : and <- load                   , icmp <- and                   
+17715400 : zext <- icmp                  , add <- phi                    
+17715400 : add <- phi                    , add <- zext                   
+17715400 : add <- zext                   , add <- phi                    
+ 9509340 : call <- trunc                 , call <- trunc                 
+ 6339560 : trunc <- lshr                 , trunc <- lshr                 
+ 3543080 : add <- trunc                  , and <- add                    
+ 3543080 : and <- add                    , zext <- and                   
+ 3543080 : zext <- and                   , getelementptr <- alloca       
+ 3543080 : getelementptr <- alloca       , getelementptr <- zext         
+ 3543080 : getelementptr <- zext         , add <- phi                    
+ 3169780 : br <- icmp                    , br <- icmp                    
+ 3169780 : br <- icmp                    , trunc <- lshr                 
+ 3169780 : trunc <- lshr                 , call <- load                  
+ 3169780 : call <- load                  , call <- trunc                 
+ 3169780 : call <- trunc                 , call <- load                  
+ 3169780 : call <- load                  , store <- call                 
+ 3169779 : zext <- phi                   , getelementptr <- zext         
+ 3169779 : call <- load                  , br <- icmp                    
+ 1611645 : shl <- phi                    , getelementptr <- getelementptr
+ 1611645 : getelementptr <- getelementptr, getelementptr <- shl          
+ 1587986 : trunc <- phi                  , shl <- trunc                  
+ 1584890 : load <- getelementptr         , call <- shl                   
+ 1584890 : call <- shl                   , call <- load                  
+ 1584890 : store <- call                 , or <- shl                     
+ 1584889 : or <- shl                     , zext <- phi                   
+ 1584889 : load <- getelementptr         , call <- or                    
+ 1584889 : call <- or                    , call <- load                  
+ 1578877 : getelementptr <- shl          , load <- getelementptr         
+ 1572709 : br <- icmp                    , shl <- phi                    
+  819200 : store <- getelementptr        , add <- phi                    
+  792445 : and <- load                   , switch <- and                 
+  792445 : switch <- and                 , trunc <- phi                  
+  792445 : shl <- trunc                  , add <- shl                    
+  792445 : add <- shl                    , add <- load                   
+  792445 : add <- load                   , store <- add                  
+  792445 : store <- add                  , store <- getelementptr        
+  792445 : store <- getelementptr        , trunc <- phi                  
+  792445 : shl <- trunc                  , zext <- phi                   
+  792445 : call <- shl                   , call <- shl                   
+  792445 : call <- or                    , call <- shl                   
+  792445 : store <- call                 , zext <- phi                   
+  792445 : call <- shl                   , call <- or                    
+  792444 : call <- or                    , call <- or                    
+  792444 : store <- call                 , add <- phi                    
+  786432 : load <- getelementptr         , ashr <- load                  
+  786432 : ashr <- load                  , store <- ashr                 
+  786432 : store <- ashr                 , store <- getelementptr        
+  708616 : trunc <- phi                  , add <- phi                    
+  708616 : br <- icmp                    , icmp <- and                   
+  708616 : icmp <- and                   , br <- icmp                    
+  630500 : br <- icmp                    , and <- add                    
+  630500 : and <- add                    , icmp <- and                   
+  630500 : zext <- icmp                  , trunc <- phi                  
+   78116 : br <- icmp                    , add <- add                    
+   78116 : add <- add                    , icmp <- add                   
+   78116 : icmp <- add                   , select <- icmp                
+   78116 : select <- icmp                , trunc <- phi                  
+   32768 : ret <- call                   , lshr <- call                  
+   32768 : lshr <- call                  , trunc <- lshr                 
+   32768 : trunc <- lshr                 , and <- trunc                  
+   32768 : and <- trunc                  , shl <- phi                    
+   32768 : getelementptr <- shl          , store <- and                  
+   32768 : store <- and                  , store <- getelementptr        
+   32640 : br <- icmp                    , ret <- call                   
+    6296 : getelementptr <- alloca       , getelementptr <- phi          
+    6271 : br <- icmp                    , getelementptr <- alloca       
+    3096 : getelementptr <- phi          , trunc <- phi                  
+    3096 : trunc <- phi                  , trunc <- phi                  
+    3096 : shl <- trunc                  , or <- shl                     
+    3096 : or <- shl                     , shl <- phi                    
+    3072 : getelementptr <- phi          , shl <- phi                    
+     128 : getelementptr <- phi          , ret <- call                   
+      25 : icmp <- call                  , br <- icmp                    
+      25 : br <- icmp                    , sub <- call                   
+      25 : sub <- call                   , sub <- load                   
+      25 : sub <- load                   , icmp <- sub                   
+      25 : icmp <- sub                   , br <- icmp                    
+      25 : br <- icmp                    , sub <- sub                    
+      25 : sub <- sub                    , call <- sub                   
+      25 : call <- sub                   , call <- load                  
+      25 : call <- load                  , getelementptr <- alloca       
+      24 : br <- icmp                    , icmp <- call                  
+       1 : call <- load                  , trunc <- call                 
+       1 : trunc <- call                 , call <- trunc                 
+       1 : call <- trunc                 , br <- icmp                    
+       1 : store <- call                 , icmp <- call                  
