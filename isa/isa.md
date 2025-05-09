@@ -258,4 +258,5 @@ func main(I,A)
     x2 = aisub x2 16
     
     x3 = call sumOf(A,I,A):L x2 5 square
+    free x2
 ```
