@@ -123,15 +123,24 @@ Command are not case-sensitive.
     - `irem(I,I):I`
     - `ldiv(L,L):L`
     - `lrem(L,L):L`
-    
+
 - Comparison (note that there are no separate type for booleans):
-    - `il(I,I):I` 
+    - `il(I,I):I`
     - `ile(I,I):I`
     - `ig(I,I):I`
     - `ige(I,I):I`
     - `ieq(I,I):I`
     - `ineq(I,I):I`
     - ... etc. for `L` and `A`
+
+- Bitwise operations:
+    - `iand(I,I):I`, `land(L,L):L`
+    - `ior(I,I):I`, `lor(L,L):L`
+    - `ixor(I,I):I`, `lxor(L,L):L`
+    - `iinv(I):I`, `linv(L):L`
+    - `ishl(I,I):I`, `lshl(L,I):L`
+    - `ishr(I,I):I`, `lshr(L,I):L`
+    - `iushr(I,I):I`, `lushr(L,I):L`
 
 All the arithmetic follow 2's complement scheme. Overflow of pointers is undefined behaviour, as pointer could be either
 32-bit or 64-bit.
@@ -206,11 +215,12 @@ Why? Because they seem to be quite useful in my application...
 
 ## Dynamic loading (if I have time)
 
-Let's consider it an extension of the language. We now allow function name be an argument too, it automatically converts to a pointer value upon compilation. Also, we should add another command:
+Let's consider it an extension of the language. We now allow function name be an argument too, it automatically converts
+to a pointer value upon compilation. Also, we should add another command:
 
-`dyncall(A, <signature>, ...)` -- dynamic call of the function by pointer, treating it as if it has said signature. 
+`dyncall(A, <signature>, ...)` -- dynamic call of the function by pointer, treating it as if it has said signature.
 
-## Example 
+## Example
 
 With all that...
 
@@ -230,7 +240,7 @@ func #sumOf(A,I,A):L          // Int array with size, then function of signature
     x7 = dyncall x2 (I):L x6  // process a value
     x3 = iadd x7 x3           // accumulate
     x0 = aiadd x0 4           // 4 is the size of an int.
-    jmp check    
+    goto check    
   end_cycle:
     lret x3    
  
