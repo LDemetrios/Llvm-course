@@ -8,22 +8,30 @@ backend targeting said bytecode.
 
 ## Registers
 
-The processor has 32678 (2^16) registers, each can hold either i32, i64 or pointer (marked I, L and A in mnemonics
-accordingly).
+The processor has 4096 registers, for each of the 6 types.
 
-During one function all registers are bound to a certain type, conversions are allowed only via explicit instructions:
+| LLVM type | Register kind name | Mnemonic |
+|-----------|--------------------|----------|
+| i32       | int                | I        |
+| i64       | long               | L        |
+| f32       | float              | F        |
+| f64       | double             | D        |
+| ptr       | reference          | A        |
+| ptr       | function           | M        |
+
+They are converted only explicitly via instructions
 
 ```
-x5 = i2l x4
+Lx5 = i2l Ix4
 ```
 
 <details>
 <summary><b>Reason</b></summary>
 The major part of JVMs perform additional typechecks when loading and linking bytecode. 
 Also, it's required to include stack map frames at the labels (information about types of values in stack).
-The difference is, there are also floats (F) and doubles (D). Besides, as there are no explicit memory management in JVM, 
-we'll reuse reference (A) type for pointers, which are actually represented with longs, pointing to specific place in 
-the manually managed heap.
+ Besides, as there are no explicit memory management in JVM, 
+we'll reuse reference (A) type for pointers. 
+Specifics of heap management are not quite clear yet, as there are different possible ways of handling it. 
 </details>
 
 ## Functions
@@ -50,7 +58,7 @@ Only end-of-line comments are allowed, after `//` sign.
 
 Identifiers follow the regex `[a-zA-Z_][a-zA-Z0-9_]*`.
 (Using digits, however, is unadvisable for readability reasons. Generally `snake_case` is preferred.)
-Identifiers of the form `x[0-9]+` are reserved for registers.
+Identifiers of the form `[ILFDIM]x[0-9]+` are reserved for registers.
 
 Functions are marked with `func` keyword, private ones have `#` before the identifier.
 Argument types are comma-separated in parentheses after the identifier.
@@ -67,10 +75,15 @@ Label is an identifier followed by a colon.
 Instruction is one of the two things:
 
 - optionally target register followed by an equal sign,
-  then a command and its parameters. Parameter is either identifier, register, int number or long number.
-  Int number is binary (`0b[01']+`), decimal (`[0-9']+`), hexadecimal (`0x[0-9a-fA-F']+`) number or a number in
-  arbitrary
-  base from 2 to 36 (`[0-9A-Za-z']_[0-9]+`). Long number is an int number followed by `L`.
+  then a command and its parameters. Parameter is either label, register, int number or long number, or a function
+  reference.
+    - Label is simply an identifier
+    - Int number is binary (`[+-]?0b[01']+`), decimal (`[+-]?[0-9']+`), hexadecimal (`0x[0-9a-fA-F']+`) number or a
+      number in
+      arbitrary
+      base from 2 to 36 (`[+-]?[0-9A-Za-z']_[0-9]+`).
+    - Long number is an int number followed by `L`.
+    - Function reference is an identifier prepended by `&`.
 
 - target register followed by an equal sign, then other register or a constant.
 
@@ -87,6 +100,8 @@ import printf(I,A,A) // File descriptor, string, arguments array, returns nothin
 We mostly will the same syntax for arguments, as in function declarations.
 Command are not case-sensitive.
 
+Floating point numbers are, for now, left outside the scope of this project.
+
 ### Arithmetic
 
 - Conversion:
@@ -96,6 +111,7 @@ Command are not case-sensitive.
     - `a2i(A):I` -- if pointer is 32-bit, do nothing, if the pointer is 64-bit, convert by trimming high bits.
     - `l2a(L):A` -- if pointer is 32-bit, convert by trimming high bits, if the pointer is 64-bit, do nothing.
     - `a2l(A):L` -- if pointer is 32-bit, convert by zero extension, if the pointer is 64-bit, do nothing.
+    - `l2m(L):M` and `m2l(M):L` are guaranteed to be inverse to each other, and aren't guaranteed to mean anything else.
 
 - Addition:
     - `iadd(I,I):I`
@@ -152,17 +168,19 @@ All the arithmetic follow 2's complement scheme. Overflow of pointers is undefin
 - `free(A)` -- free memory, previously allocated by `alloc`.
   Attempts to free any other memory, or to free the same memory twice, will lead to an error.
 - Storing:
-    - `bastore(A,I)` -- store lower byte of an int.
-    - `castore(A,I)` -- store two lower bytes of an int.
-    - `iastore(A,I)` -- store an int.
-    - `lastore(A,L)` -- store a long.
-    - `aastore(A,A)` -- store a pointer.
+    - `bastore(A,I,I)` -- store lower byte of an int.
+    - `castore(A,I,I)` -- store two lower bytes of an int.
+    - `iastore(A,I,I)` -- store an int.
+    - `lastore(A,I,L)` -- store a long.
+    - `aastore(A,I,A)` -- store a pointer.
+    - `mastore(A,I,M)` -- store a function pointer.
 - Loading:
-    - `baload(A):I` -- load lower byte of an int with sign extension.
-    - `caload(A):I` -- load two lower bytes of an int with sign extension.
-    - `iaload(A):I` -- load an int.
-    - `laload(A):L` -- load a long.
-    - `aaload(A):A` -- store a pointer.
+    - `baload(A,I):I` -- load lower byte of an int with sign extension.
+    - `caload(A,I):I` -- load two lower bytes of an int with sign extension.
+    - `iaload(A,I):I` -- load an int.
+    - `laload(A,I):L` -- load a long.
+    - `aaload(A,I):A` -- load a pointer.
+    - `maload(A,I):M` -- load a function pointer.
 
 ### Control flow
 
@@ -182,7 +200,10 @@ All the arithmetic follow 2's complement scheme. Overflow of pointers is undefin
   x38 = call add(I,I):I x36 x37
   ```
   You can add `#` to signify the local function call, but it's not necessary and is not checked.
-  It is, of course, forbidden to assign the return value to any register, if the function returns nothing.
+  It is, of course, forbidden to assign the return value to any register, if the function returns nothing. Allows only
+  statically resolved functions.
+
+- `dyncall(M, <signature>, ...)` -- dynamic call of the function by pointer, treating it as if it has said signature.
 
 ### Special instructions
 
@@ -213,50 +234,38 @@ Here's some instructions for having fun.
 
 Why? Because they seem to be quite useful in my application...
 
-## Dynamic loading (if I have time)
-
-Let's consider it an extension of the language. We now allow function name be an argument too, it automatically converts
-to a pointer value upon compilation. Also, we should add another command:
-
-`dyncall(A, <signature>, ...)` -- dynamic call of the function by pointer, treating it as if it has said signature.
-
 ## Example
 
 With all that...
 
 ```
-func #square(I):L
-    x1 = i2l x0               // Convert the first parameter to long
-    x1 = lmul x1 x1           // Reassignment is fine
-    lret x1
+func #square(I):L                // arg -> Ix0
+    Lx0 = i2l Ix0                // Convert the first parameter to long
+    Lx0 = lmul Lx0 Lx0           // Reassignment is fine
+    lret Lx0
     
-func #sumOf(A,I,A):L          // Int array with size, then function of signature (I):L
-    x3 = 0L                   // Sum
-    x4 = aiadd x0 x1          // End index
+func #sumOf(A,I,M):L             // array -> Ax0, size -> Ix0, transform -> Mx0
+    Lx0 = 0L                     // Sum
+    Ax1 = aiadd Ax0 Ix0          // End index
   check:
-    x5 = age x0 x4            // If start is greater or equal to end, 
-    jne x5 end_cycle          // then jump to the end
-    x6 = iaload x0            // load an int
-    x7 = dyncall x2 (I):L x6  // process a value
-    x3 = iadd x7 x3           // accumulate
-    x0 = aiadd x0 4           // 4 is the size of an int.
+    Ix1 = age Ax0 Ax1            // If start is greater or equal to end, 
+    jne Ix1 end_cycle            // then jump to the end
+    Ix2 = iaload Ax0 0           // load an int
+    Lx1 = dyncall Mx0 (I):L Ix2  // process a value
+    Lx0 = ladd Lx0 Lx1           // accumulate
+    Ax0 = aiadd Ax0 4            // 4 is the size of an int.
     goto check    
   end_cycle:
-    lret x3    
+    lret Lx0    
  
-func main(I,A) 
-    x2 = alloc 20             // new int[5], so to speak
-    iastore x2 1
-    x2 = aiadd x2 4
-    iastore x2 2
-    x2 = aiadd x2 4
-    iastore x2 3
-    x2 = aiadd x2 4
-    iastore x2 4
-    x2 = aiadd x2 4
-    iastore x2 5
-    x2 = aisub x2 16
+func main(I,A)                   // argc -> Ix0, argv -> Ax0
+    Ax1 = alloc 20               // new int[5], so to speak
+    iastore Ax1 0 1
+    iastore Ax1 4 2
+    iastore Ax1 8 3
+    iastore Ax1 12 4
+    iastore Ax1 16 5
     
-    x3 = call sumOf(A,I,A):L x2 5 square
-    free x2
+    Lx0 = call sumOf(A,I,M):L Ax1 5 &square
+    free Ax1
 ```
