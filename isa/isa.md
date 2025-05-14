@@ -8,7 +8,7 @@ backend targeting said bytecode.
 
 ## Registers
 
-The processor has 4096 registers, for each of the 6 types.
+The processor has 4096 registers, for each of the 4 types.
 
 | LLVM type | Register kind name | Mnemonic |
 |-----------|--------------------|----------|
@@ -16,8 +16,6 @@ The processor has 4096 registers, for each of the 6 types.
 | i64       | long               | L        |
 | f32       | float              | F        |
 | f64       | double             | D        |
-| ptr       | reference          | A        |
-| ptr       | function           | M        |
 
 They are converted only explicitly via instructions
 
@@ -28,10 +26,7 @@ Lx5 = i2l Ix4
 <details>
 <summary><b>Reason</b></summary>
 The major part of JVMs perform additional typechecks when loading and linking bytecode. 
-Also, it's required to include stack map frames at the labels (information about types of values in stack).
- Besides, as there are no explicit memory management in JVM, 
-we'll reuse reference (A) type for pointers. 
-Specifics of heap management are not quite clear yet, as there are different possible ways of handling it. 
+Also, it's required to include stack map frames at the labels (information about types of values in stack). As there is no explicit memory management, we'll use L register for throwing pointers around.
 </details>
 
 ## Functions
@@ -45,6 +40,7 @@ Functions can be public or private, private ones should have unique names inside
 public ones -- across the program. Overload resolution is not supported.
 You can import functions by their name and signature: name identifies function,
 signature is used only while linking for verification.
+There is no explicit stack, instead we use `alloc` and `free` instructions for heap allocations.
 
 ## Labels
 
@@ -107,24 +103,14 @@ Floating point numbers are, for now, left outside the scope of this project.
 - Conversion:
     - `i2l(I):L` -- convert by sign extension.
     - `l2i(L):I` -- convert by trimming high bits.
-    - `i2a(I):A` -- if pointer is 32-bit, do nothing, if the pointer is 64-bit, convert by zero-extension.
-    - `a2i(A):I` -- if pointer is 32-bit, do nothing, if the pointer is 64-bit, convert by trimming high bits.
-    - `l2a(L):A` -- if pointer is 32-bit, convert by trimming high bits, if the pointer is 64-bit, do nothing.
-    - `a2l(A):L` -- if pointer is 32-bit, convert by zero extension, if the pointer is 64-bit, do nothing.
-    - `l2m(L):M` and `m2l(M):L` are guaranteed to be inverse to each other, and aren't guaranteed to mean anything else.
 
 - Addition:
     - `iadd(I,I):I`
     - `ladd(L,L):L`
-    - `aiadd(A,I):A`
-    - `aladd(A,L):A`
 
 - Subtraction:
     - `isub(I,I):I`
     - `lsub(L,L):L`
-    - `aisub(A,I):A`
-    - `alsub(A,L):A`
-    - `aasub(A,A):L`
 
 - Negation:
     - `ineg(I):I`
@@ -147,52 +133,47 @@ Floating point numbers are, for now, left outside the scope of this project.
     - `ige(I,I):I`
     - `ieq(I,I):I`
     - `ineq(I,I):I`
-    - ... etc. for `L` and `A`
+    - ... the same for `L`
 
 - Bitwise operations:
     - `iand(I,I):I`, `land(L,L):L`
     - `ior(I,I):I`, `lor(L,L):L`
     - `ixor(I,I):I`, `lxor(L,L):L`
-    - `iinv(I):I`, `linv(L):L`
+    - `inv(I):I`, `linv(L):L`
     - `ishl(I,I):I`, `lshl(L,I):L`
     - `ishr(I,I):I`, `lshr(L,I):L`
     - `iushr(I,I):I`, `lushr(L,I):L`
 
-All the arithmetic follow 2's complement scheme. Overflow of pointers is undefined behaviour, as pointer could be either
-32-bit or 64-bit.
+
+All the arithmetic follow 2's complement scheme.
 
 ### Memory access
 
-- `alloc(L):A` -- allocate said amount of bytes. The argument is treated as an _unsigned_ long, although it's unlikely
+- `alloc(L):L` -- allocate said amount of bytes. The argument is treated as an _unsigned_ long, although it's unlikely
   to allow you to allocate so many bytes it becomes important.
-- `free(A)` -- free memory, previously allocated by `alloc`.
+- `free(K)` -- free memory, previously allocated by `alloc`.
   Attempts to free any other memory, or to free the same memory twice, will lead to an error.
 - Storing:
-    - `bastore(A,I,I)` -- store lower byte of an int.
-    - `castore(A,I,I)` -- store two lower bytes of an int.
-    - `iastore(A,I,I)` -- store an int.
-    - `lastore(A,I,L)` -- store a long.
-    - `aastore(A,I,A)` -- store a pointer.
-    - `mastore(A,I,M)` -- store a function pointer.
+    - `bastore(L,I,I)` -- store lower byte of an int.
+    - `castore(L,I,I)` -- store two lower bytes of an int.
+    - `iastore(L,I,I)` -- store an int.
+    - `lastore(L,I,L)` -- store a long.
 - Loading:
-    - `baload(A,I):I` -- load lower byte of an int with sign extension.
-    - `caload(A,I):I` -- load two lower bytes of an int with sign extension.
-    - `iaload(A,I):I` -- load an int.
-    - `laload(A,I):L` -- load a long.
-    - `aaload(A,I):A` -- load a pointer.
-    - `maload(A,I):M` -- load a function pointer.
+    - `baload(L,I):I` -- load lower byte of an int with sign extension.
+    - `caload(L,I):I` -- load two lower bytes of an int with sign extension.
+    - `iaload(L,I):I` -- load an int.
+    - `laload(L,I):L` -- load a long.
 
 ### Control flow
 
 - `goto` -- unconditional jump.
 - Conditional jumps:
-    - If the argument is zero: `ifiz(I, <label>)`, `iflz(L, <label>)`, `ifaz(A, <label>)`.
-    - If the argument is not zero: `ifinz(I, <label>)`, `iflnz(L, <label>)`, `ifanz(A, <label>)`.
+    - If the argument is zero: `ifiz(I, <label>)`, `iflz(L, <label>)`.
+    - If the argument is not zero: `ifinz(I, <label>)`, `iflnz(L, <label>)`.
       ... That's all for now.
 - Return a value from function:
     - `iret`, if the return type of the function is I.
     - `lret`, if the return type of the function is L.
-    - `aret`, if the return type of the function is A.
     - `ret`, if the function returns nothing.
 - `call` -- Call a function. It takes a function name and signature as its first argument,
   and then the corresponding amount of arguments passed to a function:
@@ -209,7 +190,7 @@ All the arithmetic follow 2's complement scheme. Overflow of pointers is undefin
 
 Here's some instructions for having fun.
 
-- `ilookupN`, `llookupN`, `alookupN` -- Table lookup.
+- `ilookupN`, `llookupN` -- Table lookup.
   It takes one argument (I), and then N arguments of the respective type `T`, and returns `T`.
   It is equivalent to:
   ```
@@ -222,7 +203,7 @@ Here's some instructions for having fun.
   } 
   ```
 
-- `iinrng(I,I,I):I`, `linrng(L,L,L):I`, `ainrng(A,A,A):I` -- checks if the first argument is in range of the second and
+- `iinrng(I,I,I):I`, `linrng(L,L,L):I` -- checks if the first argument is in range of the second and
   the third.
   It is equivalent to:
   ```
@@ -244,28 +225,38 @@ func #square(I):L                // arg -> Ix0
     Lx0 = lmul Lx0 Lx0           // Reassignment is fine
     lret Lx0
     
-func #sumOf(A,I,M):L             // array -> Ax0, size -> Ix0, transform -> Mx0
-    Lx0 = 0L                     // Sum
-    Ax1 = aiadd Ax0 Ix0          // End index
+func #sum_of(L,I,L):L             // array -> Lx0, size -> Lx0, transform -> Lx1
+    Lx2 = 0L                     // Sum
+    Lx3 = aiadd Lx0 Ix0          // End index
   check:
-    Ix1 = age Ax0 Ax1            // If start is greater or equal to end, 
+    Ix1 = age Lx0 Lx3            // If start is greater or equal to end, 
     jne Ix1 end_cycle            // then jump to the end
-    Ix2 = iaload Ax0 0           // load an int
-    Lx1 = dyncall Mx0 (I):L Ix2  // process a value
-    Lx0 = ladd Lx0 Lx1           // accumulate
-    Ax0 = aiadd Ax0 4            // 4 is the size of an int.
+    Ix2 = iaload Lx0 0           // load an int
+    Lx3 = dyncall Lx1 (I):L Ix2  // process a value
+    Lx2 = ladd Lx2 Lx3           // accumulate
+    Lx0 = aiadd Lx0 4            // 4 is the size of an int.
     goto check    
   end_cycle:
-    lret Lx0    
+    lret Lx2    
  
-func main(I,A)                   // argc -> Ix0, argv -> Ax0
-    Ax1 = alloc 20               // new int[5], so to speak
-    iastore Ax1 0 1
-    iastore Ax1 4 2
-    iastore Ax1 8 3
-    iastore Ax1 12 4
-    iastore Ax1 16 5
+func main(I,L)                   // argc -> Ix0, argv -> Lx0
+    Lx1 = alloc 20               // new int[5], so to speak
+    iastore Lx1 0 1
+    iastore Lx1 4 2
+    iastore Lx1 8 3
+    iastore Lx1 12 4
+    iastore Lx1 16 5
     
-    Lx0 = call sumOf(A,I,M):L Ax1 5 &square
-    free Ax1
+    Lx0 = call sum_ff(L,I,L):L Lx1 5 &square
+    free Lx1
 ```
+
+## Because the task demands...
+
+I don't quite like the idea of including special instructions for that, 
+I'd prefer having functions that we import and that are looked up however the compiler wants, 
+but whatever. I'll add three instructions that are specific to our application:
+
+- `putpxl(I,I,I)` -- set the color of a particular pixel in graphic memory.
+- `scrflush()` -- repaint the screen. 
+- `rnd()I` -- generate a pseudorandom number
