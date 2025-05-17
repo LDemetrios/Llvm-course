@@ -54,7 +54,7 @@ Only end-of-line comments are allowed, after `//` sign.
 
 Identifiers follow the regex `[a-zA-Z_][a-zA-Z0-9_]*`.
 (Using digits, however, is unadvisable for readability reasons. Generally `snake_case` is preferred.)
-Identifiers of the form `[ILFDIM]x[0-9]+` are reserved for registers.
+Identifiers of the form `[ILFD]x[0-9]+` are reserved for registers.
 
 Functions are marked with `func` keyword, private ones have `#` before the identifier.
 Argument types are comma-separated in parentheses after the identifier.
@@ -88,7 +88,7 @@ Relative indentation of parts of the code is irrelevant.
 Functions can be imported using `import` keyword at the start of the file:
 
 ```
-import printf(I,A,A) // File descriptor, string, arguments array, returns nothing
+import printf(I,L,L) // File descriptor, string, arguments array, returns nothing
 ```
 
 ## Instructions

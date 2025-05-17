@@ -1,3 +1,42 @@
+plugins {
+    kotlin("jvm") version "2.2.0-RC"
+    id("com.gradleup.shadow") version "8.3.0"
+}
+
+group = "org.ldemetrios"
+version = "1.0-SNAPSHOT"
+
+repositories {
+    mavenCentral()
+    mavenLocal()
+}
+
+dependencies {
+    testImplementation(kotlin("test"))
+    implementation("org.jetbrains.kotlinx:kotlinx-collections-immutable:0.4.0")
+    implementation("org.clojure:clojure:+")
+}
+
+tasks.test {
+    useJUnitPlatform()
+}
+
+kotlin {
+    jvmToolchain(21)
+}
+
+sourceSets.main {
+    java.srcDir("simulator")
+}
+
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
+    compilerOptions {
+        freeCompilerArgs.add("-Xcontext-parameters") // Enable context receivers
+    }
+}
+
+
+
 fun stat(width: Int, logSize: Int): Map<List<String>, Int> {
     val statistics = mutableMapOf<List<String>, Int>()
     val window = mutableListOf<String>()

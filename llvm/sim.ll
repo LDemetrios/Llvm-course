@@ -8,245 +8,195 @@ target triple = "x86_64-pc-linux-gnu"
 
 @Window = internal global ptr null, align 8
 @Renderer = internal global ptr null, align 8
-@.str = private unnamed_addr constant [20 x i8] c"User-requested quit\00", align 1
 @.str.1 = private unnamed_addr constant [60 x i8] c"SDL_TRUE != SDL_HasEvent(SDL_QUIT) && \22User-requested quit\22\00", align 1
 @.str.2 = private unnamed_addr constant [13 x i8] c"../app/sim.c\00", align 1
 @__PRETTY_FUNCTION__.simFlush = private unnamed_addr constant [16 x i8] c"void simFlush()\00", align 1
-@Ticks = internal global i32 0, align 4
-@.str.3 = private unnamed_addr constant [13 x i8] c"Out of range\00", align 1
+@Ticks = internal unnamed_addr global i32 0, align 4
 @.str.4 = private unnamed_addr constant [43 x i8] c"0 <= x && x < SIM_X_SIZE && \22Out of range\22\00", align 1
 @__PRETTY_FUNCTION__.simPutPixel = private unnamed_addr constant [32 x i8] c"void simPutPixel(int, int, int)\00", align 1
 @.str.5 = private unnamed_addr constant [43 x i8] c"0 <= y && y < SIM_Y_SIZE && \22Out of range\22\00", align 1
 
-; Function Attrs: noinline nounwind optnone sspstrong uwtable
-define dso_local void @simInit() #0 {
-  %1 = call i32 @SDL_Init(i32 noundef 32)
-  %2 = call i32 @SDL_CreateWindowAndRenderer(i32 noundef 512, i32 noundef 256, i32 noundef 0, ptr noundef @Window, ptr noundef @Renderer)
-  %3 = load ptr, ptr @Renderer, align 8
-  %4 = call i32 @SDL_SetRenderDrawColor(ptr noundef %3, i8 noundef zeroext 0, i8 noundef zeroext 0, i8 noundef zeroext 0, i8 noundef zeroext 0)
-  %5 = load ptr, ptr @Renderer, align 8
-  %6 = call i32 @SDL_RenderClear(ptr noundef %5)
-  %7 = call i64 @time(ptr noundef null) #4
+; Function Attrs: nounwind sspstrong uwtable
+define dso_local void @simInit() local_unnamed_addr #0 {
+  %1 = tail call i32 @SDL_Init(i32 noundef 32) #5
+  %2 = tail call i32 @SDL_CreateWindowAndRenderer(i32 noundef 512, i32 noundef 256, i32 noundef 0, ptr noundef nonnull @Window, ptr noundef nonnull @Renderer) #5
+  %3 = load ptr, ptr @Renderer, align 8, !tbaa !5
+  %4 = tail call i32 @SDL_SetRenderDrawColor(ptr noundef %3, i8 noundef zeroext 0, i8 noundef zeroext 0, i8 noundef zeroext 0, i8 noundef zeroext 0) #5
+  %5 = load ptr, ptr @Renderer, align 8, !tbaa !5
+  %6 = tail call i32 @SDL_RenderClear(ptr noundef %5) #5
+  %7 = tail call i64 @time(ptr noundef null) #5
   %8 = trunc i64 %7 to i32
-  call void @srand(i32 noundef %8) #4
-  call void @simPutPixel(i32 noundef 0, i32 noundef 0, i32 noundef 0)
-  call void @simFlush()
+  tail call void @srand(i32 noundef %8) #5
+  %9 = load ptr, ptr @Renderer, align 8, !tbaa !5
+  %10 = tail call i32 @SDL_SetRenderDrawColor(ptr noundef %9, i8 noundef zeroext 0, i8 noundef zeroext 0, i8 noundef zeroext 0, i8 noundef zeroext 0) #5
+  %11 = load ptr, ptr @Renderer, align 8, !tbaa !5
+  %12 = tail call i32 @SDL_RenderDrawPoint(ptr noundef %11, i32 noundef 0, i32 noundef 0) #5
+  %13 = tail call i32 @SDL_GetTicks() #5
+  store i32 %13, ptr @Ticks, align 4, !tbaa !9
+  tail call void @simFlush()
   ret void
 }
 
-declare i32 @SDL_Init(i32 noundef) #1
+declare i32 @SDL_Init(i32 noundef) local_unnamed_addr #1
 
-declare i32 @SDL_CreateWindowAndRenderer(i32 noundef, i32 noundef, i32 noundef, ptr noundef, ptr noundef) #1
+declare i32 @SDL_CreateWindowAndRenderer(i32 noundef, i32 noundef, i32 noundef, ptr noundef, ptr noundef) local_unnamed_addr #1
 
-declare i32 @SDL_SetRenderDrawColor(ptr noundef, i8 noundef zeroext, i8 noundef zeroext, i8 noundef zeroext, i8 noundef zeroext) #1
+declare i32 @SDL_SetRenderDrawColor(ptr noundef, i8 noundef zeroext, i8 noundef zeroext, i8 noundef zeroext, i8 noundef zeroext) local_unnamed_addr #1
 
-declare i32 @SDL_RenderClear(ptr noundef) #1
-
-; Function Attrs: nounwind
-declare void @srand(i32 noundef) #2
+declare i32 @SDL_RenderClear(ptr noundef) local_unnamed_addr #1
 
 ; Function Attrs: nounwind
-declare i64 @time(ptr noundef) #2
+declare void @srand(i32 noundef) local_unnamed_addr #2
 
-; Function Attrs: noinline nounwind optnone sspstrong uwtable
-define dso_local void @simPutPixel(i32 noundef %0, i32 noundef %1, i32 noundef %2) #0 {
-  %4 = alloca i32, align 4
-  %5 = alloca i32, align 4
-  %6 = alloca i32, align 4
-  %7 = alloca i8, align 1
-  %8 = alloca i8, align 1
-  %9 = alloca i8, align 1
-  %10 = alloca i8, align 1
-  store i32 %0, ptr %4, align 4
-  store i32 %1, ptr %5, align 4
-  store i32 %2, ptr %6, align 4
-  %11 = load i32, ptr %4, align 4
-  %12 = icmp sle i32 0, %11
-  br i1 %12, label %13, label %18
+; Function Attrs: nounwind
+declare i64 @time(ptr noundef) local_unnamed_addr #2
 
-13:                                               ; preds = %3
-  %14 = load i32, ptr %4, align 4
-  %15 = icmp slt i32 %14, 512
-  br i1 %15, label %16, label %18
+; Function Attrs: nounwind sspstrong uwtable
+define dso_local void @simPutPixel(i32 noundef %0, i32 noundef %1, i32 noundef %2) local_unnamed_addr #0 {
+  %4 = icmp ult i32 %0, 512
+  br i1 %4, label %6, label %5
 
-16:                                               ; preds = %13
-  br i1 true, label %17, label %18
-
-17:                                               ; preds = %16
-  br label %19
-
-18:                                               ; preds = %16, %13, %3
-  call void @__assert_fail(ptr noundef @.str.4, ptr noundef @.str.2, i32 noundef 51, ptr noundef @__PRETTY_FUNCTION__.simPutPixel) #5
+5:                                                ; preds = %3
+  tail call void @__assert_fail(ptr noundef nonnull @.str.4, ptr noundef nonnull @.str.2, i32 noundef 51, ptr noundef nonnull @__PRETTY_FUNCTION__.simPutPixel) #6
   unreachable
 
-19:                                               ; preds = %17
-  %20 = load i32, ptr %5, align 4
-  %21 = icmp sle i32 0, %20
-  br i1 %21, label %22, label %27
+6:                                                ; preds = %3
+  %7 = icmp ult i32 %1, 256
+  br i1 %7, label %9, label %8
 
-22:                                               ; preds = %19
-  %23 = load i32, ptr %5, align 4
-  %24 = icmp slt i32 %23, 256
-  br i1 %24, label %25, label %27
-
-25:                                               ; preds = %22
-  br i1 true, label %26, label %27
-
-26:                                               ; preds = %25
-  br label %28
-
-27:                                               ; preds = %25, %22, %19
-  call void @__assert_fail(ptr noundef @.str.5, ptr noundef @.str.2, i32 noundef 52, ptr noundef @__PRETTY_FUNCTION__.simPutPixel) #5
+8:                                                ; preds = %6
+  tail call void @__assert_fail(ptr noundef nonnull @.str.5, ptr noundef nonnull @.str.2, i32 noundef 52, ptr noundef nonnull @__PRETTY_FUNCTION__.simPutPixel) #6
   unreachable
 
-28:                                               ; preds = %26
-  %29 = load i32, ptr %6, align 4
-  %30 = ashr i32 %29, 24
-  %31 = trunc i32 %30 to i8
-  store i8 %31, ptr %7, align 1
-  %32 = load i32, ptr %6, align 4
-  %33 = ashr i32 %32, 16
-  %34 = and i32 %33, 255
-  %35 = trunc i32 %34 to i8
-  store i8 %35, ptr %8, align 1
-  %36 = load i32, ptr %6, align 4
-  %37 = ashr i32 %36, 8
-  %38 = and i32 %37, 255
-  %39 = trunc i32 %38 to i8
-  store i8 %39, ptr %9, align 1
-  %40 = load i32, ptr %6, align 4
-  %41 = and i32 %40, 255
-  %42 = trunc i32 %41 to i8
-  store i8 %42, ptr %10, align 1
-  %43 = load ptr, ptr @Renderer, align 8
-  %44 = load i8, ptr %8, align 1
-  %45 = load i8, ptr %9, align 1
-  %46 = load i8, ptr %10, align 1
-  %47 = load i8, ptr %7, align 1
-  %48 = call i32 @SDL_SetRenderDrawColor(ptr noundef %43, i8 noundef zeroext %44, i8 noundef zeroext %45, i8 noundef zeroext %46, i8 noundef zeroext %47)
-  %49 = load ptr, ptr @Renderer, align 8
-  %50 = load i32, ptr %4, align 4
-  %51 = load i32, ptr %5, align 4
-  %52 = call i32 @SDL_RenderDrawPoint(ptr noundef %49, i32 noundef %50, i32 noundef %51)
-  %53 = call i32 @SDL_GetTicks()
-  store i32 %53, ptr @Ticks, align 4
+9:                                                ; preds = %6
+  %10 = lshr i32 %2, 24
+  %11 = trunc nuw i32 %10 to i8
+  %12 = lshr i32 %2, 16
+  %13 = trunc i32 %12 to i8
+  %14 = lshr i32 %2, 8
+  %15 = trunc i32 %14 to i8
+  %16 = trunc i32 %2 to i8
+  %17 = load ptr, ptr @Renderer, align 8, !tbaa !5
+  %18 = tail call i32 @SDL_SetRenderDrawColor(ptr noundef %17, i8 noundef zeroext %13, i8 noundef zeroext %15, i8 noundef zeroext %16, i8 noundef zeroext %11) #5
+  %19 = load ptr, ptr @Renderer, align 8, !tbaa !5
+  %20 = tail call i32 @SDL_RenderDrawPoint(ptr noundef %19, i32 noundef %0, i32 noundef %1) #5
+  %21 = tail call i32 @SDL_GetTicks() #5
+  store i32 %21, ptr @Ticks, align 4, !tbaa !9
   ret void
 }
 
-; Function Attrs: noinline nounwind optnone sspstrong uwtable
-define dso_local void @simExit() #0 {
+; Function Attrs: nounwind sspstrong uwtable
+define dso_local void @simExit() local_unnamed_addr #0 {
   %1 = alloca %union.SDL_Event, align 8
+  call void @llvm.lifetime.start.p0(i64 56, ptr nonnull %1) #5
   br label %2
 
-2:                                                ; preds = %0, %9
-  %3 = call i32 @SDL_PollEvent(ptr noundef %1)
+2:                                                ; preds = %2, %0
+  %3 = call i32 @SDL_PollEvent(ptr noundef nonnull %1) #5
   %4 = icmp ne i32 %3, 0
-  br i1 %4, label %5, label %9
+  %5 = load i32, ptr %1, align 8
+  %6 = icmp eq i32 %5, 256
+  %7 = select i1 %4, i1 %6, i1 false
+  br i1 %7, label %8, label %2, !llvm.loop !11
 
-5:                                                ; preds = %2
-  %6 = load i32, ptr %1, align 8
-  %7 = icmp eq i32 %6, 256
-  br i1 %7, label %8, label %9
-
-8:                                                ; preds = %5
-  br label %10
-
-9:                                                ; preds = %5, %2
-  br label %2
-
-10:                                               ; preds = %8
-  %11 = load ptr, ptr @Renderer, align 8
-  call void @SDL_DestroyRenderer(ptr noundef %11)
-  %12 = load ptr, ptr @Window, align 8
-  call void @SDL_DestroyWindow(ptr noundef %12)
-  call void @SDL_Quit()
+8:                                                ; preds = %2
+  %9 = load ptr, ptr @Renderer, align 8, !tbaa !5
+  call void @SDL_DestroyRenderer(ptr noundef %9) #5
+  %10 = load ptr, ptr @Window, align 8, !tbaa !5
+  call void @SDL_DestroyWindow(ptr noundef %10) #5
+  call void @SDL_Quit() #5
+  call void @llvm.lifetime.end.p0(i64 56, ptr nonnull %1) #5
   ret void
 }
 
-declare i32 @SDL_PollEvent(ptr noundef) #1
+; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn memory(argmem: readwrite)
+declare void @llvm.lifetime.start.p0(i64 immarg, ptr nocapture) #3
 
-declare void @SDL_DestroyRenderer(ptr noundef) #1
+declare i32 @SDL_PollEvent(ptr noundef) local_unnamed_addr #1
 
-declare void @SDL_DestroyWindow(ptr noundef) #1
+declare void @SDL_DestroyRenderer(ptr noundef) local_unnamed_addr #1
 
-declare void @SDL_Quit() #1
+declare void @SDL_DestroyWindow(ptr noundef) local_unnamed_addr #1
 
-; Function Attrs: noinline nounwind optnone sspstrong uwtable
-define dso_local void @simFlush() #0 {
-  %1 = alloca i32, align 4
-  call void @SDL_PumpEvents()
-  %2 = call i32 @SDL_HasEvent(i32 noundef 256)
-  %3 = icmp ne i32 1, %2
-  br i1 %3, label %4, label %6
+declare void @SDL_Quit() local_unnamed_addr #1
+
+; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn memory(argmem: readwrite)
+declare void @llvm.lifetime.end.p0(i64 immarg, ptr nocapture) #3
+
+; Function Attrs: nounwind sspstrong uwtable
+define dso_local void @simFlush() local_unnamed_addr #0 {
+  tail call void @SDL_PumpEvents() #5
+  %1 = tail call i32 @SDL_HasEvent(i32 noundef 256) #5
+  %2 = icmp eq i32 %1, 1
+  br i1 %2, label %3, label %4
+
+3:                                                ; preds = %0
+  tail call void @__assert_fail(ptr noundef nonnull @.str.1, ptr noundef nonnull @.str.2, i32 noundef 40, ptr noundef nonnull @__PRETTY_FUNCTION__.simFlush) #6
+  unreachable
 
 4:                                                ; preds = %0
-  br i1 true, label %5, label %6
+  %5 = tail call i32 @SDL_GetTicks() #5
+  %6 = load i32, ptr @Ticks, align 4, !tbaa !9
+  %7 = sub i32 %5, %6
+  %8 = icmp ult i32 %7, 50
+  br i1 %8, label %9, label %11
 
-5:                                                ; preds = %4
-  br label %7
+9:                                                ; preds = %4
+  %10 = sub nuw nsw i32 50, %7
+  tail call void @SDL_Delay(i32 noundef %10) #5
+  br label %11
 
-6:                                                ; preds = %4, %0
-  call void @__assert_fail(ptr noundef @.str.1, ptr noundef @.str.2, i32 noundef 40, ptr noundef @__PRETTY_FUNCTION__.simFlush) #5
-  unreachable
-
-7:                                                ; preds = %5
-  %8 = call i32 @SDL_GetTicks()
-  %9 = load i32, ptr @Ticks, align 4
-  %10 = sub i32 %8, %9
-  store i32 %10, ptr %1, align 4
-  %11 = load i32, ptr %1, align 4
-  %12 = icmp ult i32 %11, 50
-  br i1 %12, label %13, label %16
-
-13:                                               ; preds = %7
-  %14 = load i32, ptr %1, align 4
-  %15 = sub i32 50, %14
-  call void @SDL_Delay(i32 noundef %15)
-  br label %16
-
-16:                                               ; preds = %13, %7
-  %17 = load ptr, ptr @Renderer, align 8
-  call void @SDL_RenderPresent(ptr noundef %17)
+11:                                               ; preds = %9, %4
+  %12 = load ptr, ptr @Renderer, align 8, !tbaa !5
+  tail call void @SDL_RenderPresent(ptr noundef %12) #5
   ret void
 }
 
-declare void @SDL_PumpEvents() #1
+declare void @SDL_PumpEvents() local_unnamed_addr #1
 
-declare i32 @SDL_HasEvent(i32 noundef) #1
+declare i32 @SDL_HasEvent(i32 noundef) local_unnamed_addr #1
 
-; Function Attrs: noreturn nounwind
-declare void @__assert_fail(ptr noundef, ptr noundef, i32 noundef, ptr noundef) #3
+; Function Attrs: cold noreturn nounwind
+declare void @__assert_fail(ptr noundef, ptr noundef, i32 noundef, ptr noundef) local_unnamed_addr #4
 
-declare i32 @SDL_GetTicks() #1
+declare i32 @SDL_GetTicks() local_unnamed_addr #1
 
-declare void @SDL_Delay(i32 noundef) #1
+declare void @SDL_Delay(i32 noundef) local_unnamed_addr #1
 
-declare void @SDL_RenderPresent(ptr noundef) #1
+declare void @SDL_RenderPresent(ptr noundef) local_unnamed_addr #1
 
-declare i32 @SDL_RenderDrawPoint(ptr noundef, i32 noundef, i32 noundef) #1
+declare i32 @SDL_RenderDrawPoint(ptr noundef, i32 noundef, i32 noundef) local_unnamed_addr #1
 
-; Function Attrs: noinline nounwind optnone sspstrong uwtable
-define dso_local i32 @simRand() #0 {
-  %1 = call i32 @rand() #4
+; Function Attrs: nounwind sspstrong uwtable
+define dso_local i32 @simRand() local_unnamed_addr #0 {
+  %1 = tail call i32 @rand() #5
   ret i32 %1
 }
 
 ; Function Attrs: nounwind
-declare i32 @rand() #2
+declare i32 @rand() local_unnamed_addr #2
 
-attributes #0 = { noinline nounwind optnone sspstrong uwtable "frame-pointer"="all" "min-legal-vector-width"="0" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
-attributes #1 = { "frame-pointer"="all" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
-attributes #2 = { nounwind "frame-pointer"="all" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
-attributes #3 = { noreturn nounwind "frame-pointer"="all" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
-attributes #4 = { nounwind }
-attributes #5 = { noreturn nounwind }
+attributes #0 = { nounwind sspstrong uwtable "min-legal-vector-width"="0" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+attributes #1 = { "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+attributes #2 = { nounwind "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+attributes #3 = { mustprogress nocallback nofree nosync nounwind willreturn memory(argmem: readwrite) }
+attributes #4 = { cold noreturn nounwind "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+attributes #5 = { nounwind }
+attributes #6 = { cold noreturn nounwind }
 
-!llvm.module.flags = !{!0, !1, !2, !3, !4}
-!llvm.ident = !{!5}
+!llvm.module.flags = !{!0, !1, !2, !3}
+!llvm.ident = !{!4}
 
 !0 = !{i32 1, !"wchar_size", i32 4}
 !1 = !{i32 8, !"PIC Level", i32 2}
 !2 = !{i32 7, !"PIE Level", i32 2}
 !3 = !{i32 7, !"uwtable", i32 2}
-!4 = !{i32 7, !"frame-pointer", i32 2}
-!5 = !{!"clang version 18.1.8"}
+!4 = !{!"clang version 19.1.7"}
+!5 = !{!6, !6, i64 0}
+!6 = !{!"any pointer", !7, i64 0}
+!7 = !{!"omnipotent char", !8, i64 0}
+!8 = !{!"Simple C/C++ TBAA"}
+!9 = !{!10, !10, i64 0}
+!10 = !{!"int", !7, i64 0}
+!11 = distinct !{!11, !12}
+!12 = !{!"llvm.loop.unroll.disable"}
