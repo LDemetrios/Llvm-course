@@ -75,6 +75,8 @@ data class ParsedFile(val funcs: List<ParsedFunction>, val imports: Map<String, 
 
 val NAME_REGEX = Regex("[a-zA-Z_][a-zA-Z0-9_]*")
 val REG_REGEX = Regex("[ILFD]x[0-9]+")
+val HEADER_REGEX = Regex("#?[a-zA-Z_][a-zA-Z0-9_]*\\([ILFD,]*\\)(:[ILFD])?")
+val SIGNATURE_REGEX = Regex("\\([ILFD,]*\\)(:[ILFD])?")
 
 fun parse(file: String): ParsedFile {
     val lines = file.lines()
@@ -97,16 +99,30 @@ fun parse(file: String): ParsedFile {
         .let { it + lines.size }
         .let { starts ->
             List(starts.size - 1) {
-                val header = lines[starts[it]]
+                val header = lines[starts[it]].removePrefix("func").filter { !it.isWhitespace() }
                 val instr = lines.subList(starts[it] + 1, starts[it + 1])
-                TODO()
+                require(header.matches(HEADER_REGEX)) { "Invalid function header `$header`" }
+                val name = header.substringBefore("(")
+                ParsedFunction(
+                    name.removePrefix("#"),
+                    name[0] != '#',
+                    header.substring(name.length).parseSignature(),
+                    instr.map { it.parsePseudoInstruction() }
+                )
             }
         }
+
+    return ParsedFile(functions, imports)
+}
+
+private fun String.parseSignature(): Signature {
+    require(matches(SIGNATURE_REGEX))
 
 
 }
 
-private fun String.parseSignature(): Signature {
+
+private fun String.parsePseudoInstruction(): PseudoInstruction {
     TODO()
 
 }
