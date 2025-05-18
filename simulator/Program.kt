@@ -14,7 +14,6 @@ data class Signature(val args: String, val ret: Char?) {
 data class RuneFunction(
     val name: String,
     val signature: Signature,
-    val returnType: Char,
     val instructions: List<Instruction>,
     val labels: Map<String, Int>,
 )

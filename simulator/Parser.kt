@@ -14,19 +14,19 @@ fun Memory(
 )
 
 sealed class OperandName
-data class RegisterON(val type: Char, val idx: Int) {
+data class RegisterON(val type: Char, val idx: Int) : OperandName() {
     override fun toString(): String = "${type}x$idx"
 }
 
-data class ImmON(val value: String) {
+data class ImmON(val value: String) : OperandName() {
     override fun toString(): String = value
 }
 
-data class FunctionPtrON(val name: String) {
+data class FunctionPtrON(val name: String) : OperandName() {
     override fun toString(): String = "&$name"
 }
 
-data class LabelON(val name: String) {
+data class LabelON(val name: String) : OperandName() {
     override fun toString(): String = name
 }
 
@@ -41,16 +41,18 @@ data class MovePI(val dst: RegisterON, val src: OperandName) : PseudoInstruction
     override fun toString(): String = "\t\t$dst = $src"
 }
 
-data class RegularPI(val dst: RegisterON?, val mnemonic: String, val args: List<OperandName>) {
+data class RegularPI(val dst: RegisterON?, val mnemonic: String, val args: List<OperandName>) : PseudoInstruction() {
     override fun toString(): String = "\t\t" + (dst?.let { "$it = " } ?: "") + mnemonic + " " + args.joinToString(" ")
 }
 
-data class CallPI(val dst: RegisterON?, val name: String, val signature: Signature, val args: List<OperandName>) {
+data class CallPI(val dst: RegisterON?, val name: String, val signature: Signature, val args: List<RegisterON>) :
+    PseudoInstruction() {
     override fun toString(): String =
         "\t\t" + (dst?.let { "$it = " } ?: "") + "call $name$signature " + args.joinToString(" ")
 }
 
-data class DyncallPI(val dst: RegisterON?, val ptr: RegisterON, val signature: Signature, val args: List<OperandName>) {
+data class DyncallPI(val dst: RegisterON?, val ptr: RegisterON, val signature: Signature, val args: List<RegisterON>) :
+    PseudoInstruction() {
     override fun toString(): String =
         "\t\t" + (dst?.let { "$it = " } ?: "") + "call $ptr $signature " + args.joinToString(" ")
 }
@@ -107,10 +109,54 @@ fun parse(file: String): ParsedFile {
                     name.removePrefix("#"),
                     name[0] != '#',
                     header.substring(name.length).parseSignature(),
-                    instr.map { it.parsePseudoInstruction() }
+                    instr.map(String::parsePseudoInstruction)
                 )
             }
         }
+
+    // Check for duplicate function names
+    val functionNames = (functions.map { it.name } + imports.keys)
+
+    val duplicates = functionNames.groupingBy { it }.eachCount().filter { it.value > 1 }
+    require(duplicates.isEmpty()) {
+        duplicates.entries.joinToString("\n") { (name, count) ->
+            "Duplicate name `$name` found $count times"
+        }
+    }
+
+    // Check all labels are resolvable
+    functions.forEach {
+        val labels = it.instr.filterIsInstance<LabelPI>().map { it.label }
+        val mentioned = it.instr
+            .filterIsInstance<RegularPI>()
+            .flatMap(RegularPI::args)
+            .filterIsInstance<LabelON>()
+            .map(LabelON::name)
+        val unresolved = mentioned - labels
+        require(unresolved.isEmpty()) {
+            "Function `${it.name}` has unresolved labels: ${unresolved.joinToString(", ")}"
+        }
+    }
+
+    // Check all functions are resolvable
+
+    functions.forEach { func ->
+        val calls = func.instr.filterIsInstance<CallPI>().map { it.name }
+        val pointers = func.instr
+            .flatMap {
+                when (it) {
+                    is MovePI -> listOf(it.dst)
+                    is RegularPI -> it.args
+                    else -> emptyList()
+                }
+            }
+            .filterIsInstance<FunctionPtrON>()
+            .map(FunctionPtrON::name)
+        val unresolved = calls + pointers - functionNames
+        require(unresolved.isEmpty()) {
+            "Function `${func.name}` has unresolved function mentions: ${unresolved.joinToString(", ")}"
+        }
+    }
 
     return ParsedFile(functions, imports)
 }
@@ -118,7 +164,9 @@ fun parse(file: String): ParsedFile {
 private fun String.parseSignature(): Signature {
     require(matches(SIGNATURE_REGEX))
 
-
+    val args = substringBefore(":").filter { it in "ILFD" }
+    val ret = substringAfter(":").takeIf { it.length == 1 }
+    return Signature(args, ret?.get(0))
 }
 
 

@@ -145,8 +145,8 @@ data class LAnd_ri(val left: Reg, val right: L, val dst: Reg) : FLInst({ setting
 data class LOr_ri(val left: Reg, val right: L, val dst: Reg) : FLInst({ settingL(dst, l(left) or right) })
 data class LXor_ri(val left: Reg, val right: L, val dst: Reg) : FLInst({ settingL(dst, l(left) xor right) })
 
-data class IInv(val src: Reg, val dst: Reg) : FLInst({ settingI(dst, i(src).inv()) })
-data class LInv(val src: Reg, val dst: Reg) : FLInst({ settingL(dst, l(src).inv()) })
+data class IInv_rr(val src: Reg, val dst: Reg) : FLInst({ settingI(dst, i(src).inv()) })
+data class LInv_rr(val src: Reg, val dst: Reg) : FLInst({ settingL(dst, l(src).inv()) })
 
 data class IShl_rr(val left: Reg, val right: Reg, val dst: Reg) : FLInst({ settingI(dst, i(left) shl i(right)) })
 data class IShr_rr(val left: Reg, val right: Reg, val dst: Reg) : FLInst({ settingI(dst, i(left) shr i(right)) })
@@ -202,19 +202,19 @@ data class BAStore_rii(val addr: Reg, val shift: I, val value: B) : HeapInstruct
     store(l(addr) + shift, value.toByte().toBytes()) to this
 })
 
-data class CAStore_rrr(val addr: Reg, val shift: Reg, val value: Reg) : HeapInstruction({
+data class SAStore_rrr(val addr: Reg, val shift: Reg, val value: Reg) : HeapInstruction({
     store(l(addr) + i(shift), i(value).toShort().toBytes()) to this
 })
 
-data class CAStore_rir(val addr: Reg, val shift: I, val value: Reg) : HeapInstruction({
+data class SAStore_rir(val addr: Reg, val shift: I, val value: Reg) : HeapInstruction({
     store(l(addr) + shift, i(value).toShort().toBytes()) to this
 })
 
-data class CAStore_rri(val addr: Reg, val shift: Reg, val value: C) : HeapInstruction({
+data class SAStore_rri(val addr: Reg, val shift: Reg, val value: S) : HeapInstruction({
     store(l(addr) + i(shift), value.toShort().toBytes()) to this
 })
 
-data class CAStore_rii(val addr: Reg, val shift: I, val value: C) : HeapInstruction({
+data class SAStore_rii(val addr: Reg, val shift: I, val value: S) : HeapInstruction({
     store(l(addr) + shift, value.toShort().toBytes()) to this
 })
 
@@ -291,11 +291,11 @@ data class BALoad_ri(val addr: Reg, val shift: I, val dst: Reg) : HeapInstructio
 })
 
 
-data class CALoad_rr(val addr: Reg, val shift: Reg, val dst: Reg) : HeapInstruction({
+data class SALoad_rr(val addr: Reg, val shift: Reg, val dst: Reg) : HeapInstruction({
     implicit<PersistentHeap>() to settingI(dst, load(l(addr) + i(shift), 2).toC().toInt())
 })
 
-data class CALoad_ri(val addr: Reg, val shift: I, val dst: Reg) : HeapInstruction({
+data class SALoad_ri(val addr: Reg, val shift: I, val dst: Reg) : HeapInstruction({
     implicit<PersistentHeap>() to settingI(dst, load(l(addr) + shift, 2).toC().toInt())
 })
 
@@ -335,20 +335,20 @@ data class DALoad_ri(val addr: Reg, val shift: I, val dst: Reg) : HeapInstructio
     implicit<PersistentHeap>() to settingD(dst, load(l(addr) + shift, 8).toD())
 })
 
-sealed class JumpIfInstruction(label: String, func: Frame.() -> Boolean) : FLInst({
-    if (func()) copy(ip = labels[label]!! - 1) else this
+sealed class JumpIfInstruction(label: Int, func: Frame.() -> Boolean) : FLInst({
+    if (func()) copy(ip = label - 1) else this
 })
 
-data class Goto(val label: String) : JumpIfInstruction(label, { true })
+data class Goto(val label: Int) : JumpIfInstruction(label, { true })
 
-data class IfIZ(val label: String, val src: Reg) : JumpIfInstruction(label, { i(src) == 0 })
-data class IfLZ(val label: String, val src: Reg) : JumpIfInstruction(label, { l(src) == 0L })
-data class IfFZ(val label: String, val src: Reg) : JumpIfInstruction(label, { f(src) == 0F })
-data class IfDZ(val label: String, val src: Reg) : JumpIfInstruction(label, { d(src) == .0 })
-data class IfInZ(val label: String, val src: Reg) : JumpIfInstruction(label, { i(src) != 0 })
-data class IfLnZ(val label: String, val src: Reg) : JumpIfInstruction(label, { l(src) != 0L })
-data class IfFnZ(val label: String, val src: Reg) : JumpIfInstruction(label, { f(src) != 0F })
-data class IfDnZ(val label: String, val src: Reg) : JumpIfInstruction(label, { d(src) != .0 })
+data class IfIZ(val src: Reg, val label: Int,) : JumpIfInstruction(label, { i(src) == 0 })
+data class IfLZ(val src: Reg, val label: Int,) : JumpIfInstruction(label, { l(src) == 0L })
+data class IfFZ(val src: Reg, val label: Int,) : JumpIfInstruction(label, { f(src) == 0F })
+data class IfDZ(val src: Reg, val label: Int,) : JumpIfInstruction(label, { d(src) == .0 })
+data class IfInZ( val src: Reg, val label: Int) : JumpIfInstruction(label, { i(src) != 0 })
+data class IfLnZ( val src: Reg, val label: Int) : JumpIfInstruction(label, { l(src) != 0L })
+data class IfFnZ( val src: Reg, val label: Int) : JumpIfInstruction(label, { f(src) != 0F })
+data class IfDnZ( val src: Reg, val label: Int) : JumpIfInstruction(label, { d(src) != .0 })
 
 sealed class ReturnInstruction<T>(src: Reg, val getter: Frame.(Reg) -> T, val settingT: Frame.(Reg, T) -> Frame) :
     Instruction({
@@ -403,10 +403,10 @@ data class LMove_rr(val src: Reg, val dst: Reg) : FLInst({ settingL(dst, l(src))
 data class FMove_rr(val src: Reg, val dst: Reg) : FLInst({ settingF(dst, f(src)) })
 data class DMove_rr(val src: Reg, val dst: Reg) : FLInst({ settingD(dst, d(src)) })
 
-data class IMove_ri(val src: I, val dst: Reg) : FLInst({ settingI(dst, src) })
-data class LMove_ri(val src: L, val dst: Reg) : FLInst({ settingL(dst, src) })
-data class FMove_ri(val src: F, val dst: Reg) : FLInst({ settingF(dst, src) })
-data class DMove_ri(val src: D, val dst: Reg) : FLInst({ settingD(dst, src) })
+data class IMove_ir(val src: I, val dst: Reg) : FLInst({ settingI(dst, src) })
+data class LMove_ir(val src: L, val dst: Reg) : FLInst({ settingL(dst, src) })
+data class FMove_ir(val src: F, val dst: Reg) : FLInst({ settingF(dst, src) })
+data class DMove_ir(val src: D, val dst: Reg) : FLInst({ settingD(dst, src) })
 
 class PutPxl(val xReg: Reg, val yReg: Reg, val clrReg: Reg) : Instruction({
     withGraphicMemory { set(xReg * SCREEN_WIDTH + yReg, clrReg) }
@@ -420,3 +420,4 @@ data class Rnd(val dstReg: Reg) : FLInst({
     settingI(dstReg, ThreadLocalRandom.current().nextInt())
 })
 
+data object BrPoint : Instruction({ this })

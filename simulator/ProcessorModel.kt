@@ -11,7 +11,7 @@ typealias F = Float
 typealias D = Double
 typealias L = Long
 typealias B = Int
-typealias C = Int
+typealias S = Int
 typealias Reg = Int
 
 

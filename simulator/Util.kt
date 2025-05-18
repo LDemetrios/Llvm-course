@@ -1,8 +1,3 @@
-import kotlinx.collections.immutable.PersistentList
-import kotlin.collections.component1
-import kotlin.experimental.and
-
-// Conversion to byte arrays
 fun Byte.toBytes(): ByteArray = byteArrayOf(this)
 
 fun Short.toBytes(): ByteArray = byteArrayOf(
