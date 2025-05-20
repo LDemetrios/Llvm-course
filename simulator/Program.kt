@@ -20,7 +20,19 @@ data class RuneFunction(
 
 sealed class Instruction(
     val programStep: context(Program) Memory.() -> Memory
-)
+) {
+    var repr: String? = null
+    override fun toString(): String = repr ?: buildString {
+        append(this@Instruction.javaClass.simpleName)
+        append("(")
+        this@Instruction.javaClass
+            .declaredFields
+            .map { it.get(this@Instruction) }
+            .joinToString(", ")
+            .let(::append)
+        append(")")
+    }
+}
 
 fun Memory.withLastFrame(transform: context(RuneFunction) Frame.() -> Frame): Memory {
     val last = frameStack.last()

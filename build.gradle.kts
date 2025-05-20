@@ -15,6 +15,9 @@ dependencies {
     testImplementation(kotlin("test"))
     implementation("org.jetbrains.kotlinx:kotlinx-collections-immutable:0.4.0")
     implementation("org.clojure:clojure:+")
+    implementation("com.github.ajalt.clikt:clikt:4.2.2")
+    implementation("com.googlecode.lanterna:lanterna:3.1.1")
+    implementation("org.jline:jline:3.23.0") // or latest
 }
 
 tasks.test {

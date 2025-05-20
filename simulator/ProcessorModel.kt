@@ -77,6 +77,11 @@ data class PersistentHeap(
         heap.put(allocated, List<Byte>(amount.toInt()) { 0 }.toPersistentList())
     )
 
+    fun alloc(data: ByteArray) = allocated to PersistentHeap(
+        allocated + data.size,
+        heap.put(allocated, data.toList().toPersistentList())
+    )
+
     fun free(address: Long) = copy(heap = heap.without(address))
 
     private fun find(address: Long, size: Int): Map.Entry<Long, PersistentList<Byte>> {
@@ -107,3 +112,8 @@ data class PersistentHeap(
 }
 
 fun Memory.lastFrame() = frameStack.last().second
+
+fun PersistentHeap(reserve: Long) = PersistentHeap(
+    reserve + 1,
+    PersistentTreeMap()
+)
