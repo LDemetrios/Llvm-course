@@ -81,8 +81,9 @@ val REG_REGEX = Regex("[ILFD]x[0-9]+")
 val HEADER_REGEX = Regex("#?[a-zA-Z_][a-zA-Z0-9_]*\\([ILFD,]*\\)(:[ILFD])?")
 val SIGNATURE_REGEX = Regex("\\([ILFD,]*\\)(:[ILFD])?")
 
+
 fun parse(file: String): ParsedFile {
-    val lines = file.lines()
+    val lines = preprocess(file).lines()
         .map { it.split("//")[0] }
         .filter { it.isNotBlank() }
     val imports = lines

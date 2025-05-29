@@ -18,7 +18,6 @@ dependencies {
     implementation("org.clojure:spec.alpha:+")
     implementation("com.github.ajalt.clikt:clikt:4.2.2")
     implementation("com.googlecode.lanterna:lanterna:3.1.1")
-    implementation("org.jline:jline:3.23.0") // or latest
 }
 
 tasks.test {
