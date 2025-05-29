@@ -22,16 +22,25 @@ sealed class Instruction(
     val programStep: context(Program) Memory.() -> Memory
 ) {
     var repr: String? = null
-    override fun toString(): String = repr ?: buildString {
-        append(this@Instruction.javaClass.simpleName)
-        append("(")
-        this@Instruction.javaClass
-            .declaredFields
-            .map { it.get(this@Instruction) }
-            .joinToString(", ")
-            .let(::append)
-        append(")")
+    override fun toString(): String {
+        return repr?.trim() ?: buildString {
+            append(this@Instruction.javaClass.simpleName)
+            append("(")
+            this@Instruction.javaClass
+                .declaredFields
+                .map { it.get(this@Instruction) }
+                .joinToString(", ")
+                .let(::append)
+            append(")")
+        }
     }
+
+    override fun equals(other: Any?): Boolean {
+        return this === other || this.javaClass == other?.javaClass &&
+                this.javaClass.declaredFields.all { it.get(this) == it.get(other) }
+    }
+
+    override fun hashCode(): Int = this.javaClass.declaredFields.map { it.get(this) }.hashCode()
 }
 
 fun Memory.withLastFrame(transform: context(RuneFunction) Frame.() -> Frame): Memory {

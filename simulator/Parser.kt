@@ -1,7 +1,8 @@
+import RegisterON
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
 
-private val EMPTY_SCREEN = List(SCREEN_WIDTH * SCREEN_HEIGHT) { 0 }.toPersistentList()
+val EMPTY_SCREEN = List(SCREEN_WIDTH * SCREEN_HEIGHT) { 0 }.toPersistentList()
 
 fun Memory(
     heap: PersistentHeap,
@@ -82,6 +83,8 @@ val SIGNATURE_REGEX = Regex("\\([ILFD,]*\\)(:[ILFD])?")
 
 fun parse(file: String): ParsedFile {
     val lines = file.lines()
+        .map { it.split("//")[0] }
+        .filter { it.isNotBlank() }
     val imports = lines
         .takeWhile { !it.startsWith("func") }
         .map { it.trim() }
@@ -162,16 +165,91 @@ fun parse(file: String): ParsedFile {
 }
 
 private fun String.parseSignature(): Signature {
-    require(matches(SIGNATURE_REGEX))
+    require(matches(SIGNATURE_REGEX)) { "`$this` is not signature" }
 
     val args = substringBefore(":").filter { it in "ILFD" }
     val ret = substringAfter(":").takeIf { it.length == 1 }
     return Signature(args, ret?.get(0))
 }
 
-
 private fun String.parsePseudoInstruction(): PseudoInstruction {
-    TODO()
+    val value = trim()
+    if (value.endsWith(':')) {
+        val ident = value.removeSuffix(":")
+        require(ident.matches(NAME_REGEX)) { "$ident is not correct label identifier" }
+        return LabelPI(ident)
+    }
+    val parts = split('=').map { it.trim() }
 
+    val (dst, instr) = when (parts.size) {
+        1 -> null to parts[0]
+        2 -> parts[0] to parts[1]
+        else -> throw AssertionError("More than one equal sign in `$this`")
+    }
+    val instrParts = instr.split(Regex("[ \t\r\n]+"))
+    return if (instrParts.size == 1) {
+        val it = instrParts[0]
+        when {
+            REG_REGEX.matches(it) -> MovePI(
+                dst?.parseReg() ?: throw AssertionError("Single register is not a correct instruction"),
+                it.parseReg()
+            ) as PseudoInstruction
+
+            NAME_REGEX.matches(it) -> RegularPI(dst?.parseReg(), it, listOf())
+
+            it.startsWith("&") -> {
+                MovePI(
+                    dst?.parseReg() ?: throw AssertionError("Single literal is not a correct instruction"),
+                    FunctionPtrON(it.removePrefix("&"))
+                )
+            }
+
+            else -> MovePI(
+                dst?.parseReg() ?: throw AssertionError("Single literal (or whatever `$it` is) is not a correct instruction"),
+                ImmON(it)
+            )
+        }
+    } else {
+        when (val mnemonic = instrParts[0]) {
+            "call" -> {
+                CallPI(
+                    dst?.parseReg(),
+                    instrParts[1],
+                    instrParts[2].parseSignature(),
+                    instrParts.drop(3).map { it.parseReg() }
+                )
+            }
+
+            "dyncall" -> {
+                DyncallPI(
+                    dst?.parseReg(),
+                    instrParts[1].parseReg(),
+                    instrParts[2].parseSignature(),
+                    instrParts.drop(3).map { it.parseReg() }
+                )
+            }
+
+            else -> {
+                RegularPI(
+                    dst?.parseReg(),
+                    mnemonic,
+                    instrParts.drop(1).map { it.parseON() }
+                )
+            }
+        }
+    }
+}
+
+fun String.parseReg(): RegisterON {
+    require(matches(REG_REGEX)) {"`$this` is not a register"}
+    val (ch, idx) = split("x")
+    return RegisterON(ch[0], idx.toInt())
+}
+
+fun String.parseON() = when {
+    REG_REGEX.matches(this) -> parseReg()
+    NAME_REGEX.matches(this) -> LabelON(this)
+    startsWith("&") -> FunctionPtrON(drop(1))
+    else -> ImmON(this)
 }
 

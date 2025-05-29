@@ -22,7 +22,7 @@ class PersistentTreeMap<K, V> private constructor(val map: CljMap) : Map<K, V> {
 
     fun put(key: K, value: V) = PersistentTreeMap<K, V>(map.assoc(key, value))
 
-    fun floor(key: K) = map.seqFrom(key, true).first() as Map.Entry<K, V>?
+    fun floor(key: K) = map.seqFrom(key, false)?.first() as Map.Entry<K, V>?
 
     fun without(key: K) = PersistentTreeMap<K, V>(map.without(key))
 

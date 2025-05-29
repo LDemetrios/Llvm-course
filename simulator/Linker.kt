@@ -7,7 +7,7 @@ fun link(files: List<VFile>): List<ParsedFunction> {
     val parsed = files.flatMap { f ->
         val data = parse(f.content)
 
-        val postfix = "@" + f.hashCode().toString(16).padStart(8, ' ') +
+        val postfix = "@" + f.hashCode().toUInt().toString(16).padStart(8, ' ') +
                 f.path.replace(SPECIAL_CHARS, "_")
 
         // Rename all private functions
@@ -83,7 +83,7 @@ fun link(files: List<VFile>): List<ParsedFunction> {
                 is MovePI -> {}
 
                 is RegularPI -> if (it.mnemonic.lowercase() in listOf("iret", "lret", "fret", "dret", "ret")) {
-                    val type = it.mnemonic[0].takeIf { it != 'r' }
+                    val type = it.mnemonic[0].takeIf { it != 'r' }?.uppercase()[0]
                     require(type == function.signature.ret) {
                         "Function ${function.name} returns ${function.signature.ret}, but used ${it.mnemonic} ($it)"
                     }

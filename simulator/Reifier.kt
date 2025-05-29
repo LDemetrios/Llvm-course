@@ -1,7 +1,7 @@
 fun reify(funcs: List<ParsedFunction>): Program {
     val names = funcs.map(ParsedFunction::name).withIndex()
-        .associate { (idx, value) -> value to idx }
-    
+        .associate { (idx, value) -> value to idx + 1 }
+
     val reified: List<RuneFunction> = funcs.map { f ->
         reifyFunction(f, names)
     }
@@ -24,7 +24,7 @@ private fun reifyFunction(
     }
 
     val instructions = f.instr.mapNotNull { instr ->
-        Reifier(instr, functions, labels).reify()
+        Reifier(instr, functions, labels).reify()?.also { it.repr = instr.toString() }
     }
 
     return RuneFunction(
@@ -39,7 +39,33 @@ sealed class OperandVariant<T>
 data class RegVar<T>(val reg: Reg) : OperandVariant<T>()
 data class ImmVar<T>(val imm: T) : OperandVariant<T>()
 
-fun String.parseIntegral(): Long = TODO()
+fun String.parseIntegralOrNull(): Long? = when {
+    Regex("[+-]?0b[01']+").matches(this) -> {
+        val sign = if (this[0] == '-') "-" else ""
+        val value = this.substringAfterLast('b').filter { it != '\'' }
+        (sign + value).toLong(2)
+    }
+
+    Regex("[+-]?[0-9']+").matches(this) -> {
+        filter { it != '\'' }.toLong()
+    }
+
+    Regex("0x[0-9a-fA-F']+").matches(this) -> {
+        substring(2).filter { it != '\'' }.toULong(16).toLong()
+    }
+
+    Regex("[+-]?[0-9A-Za-z']_[0-9]+").matches(this) -> {
+        val value = substringBefore('_').filter { it != '\'' }
+        val base = substringAfter('_').toInt()
+        value.toLong(base)
+    }
+
+    else -> null
+}
+
+fun String.parseIntegral() =
+    parseIntegralOrNull() ?: throw NumberFormatException("`$this` is not a correct integral literal")
+
 fun String.parseI(): Int = parseIntegral().toInt()
 fun String.parseL(): Long {
     require(endsWith("L")) { "$this is not a long (should be a number ended by L)" }
@@ -77,11 +103,11 @@ private class Reifier(
     fun OperandName?.opD(): OperandVariant<D> = opT('D') { parseD() }
 
     inline fun <reified T> OperandName?.opTReified(): OperandVariant<T> = when (T::class.java) {
-        I::class.java -> opI() as OperandVariant<T>
-        L::class.java -> opL() as OperandVariant<T>
-        F::class.java -> opF() as OperandVariant<T>
-        D::class.java -> opD() as OperandVariant<T>
-        else -> throw AssertionError("Unreachable")
+        I::class.javaObjectType -> opI() as OperandVariant<T>
+        L::class.javaObjectType -> opL() as OperandVariant<T>
+        F::class.javaObjectType -> opF() as OperandVariant<T>
+        D::class.javaObjectType -> opD() as OperandVariant<T>
+        else -> throw AssertionError("Unreachable (${T::class.java} ${I::class.java})")
     }
 
     fun unsupported(): Nothing = incorrect("Unexpected argument combination (imm/reg)`")

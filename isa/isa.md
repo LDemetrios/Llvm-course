@@ -93,7 +93,7 @@ import printf(I,L,L) // File descriptor, string, arguments array, returns nothin
 
 ## Instructions
 
-We mostly will the same syntax for arguments, as in function declarations.
+We mostly will use the same syntax for arguments, as in function declarations.
 Command are not case-sensitive.
 
 Floating point numbers are, for now, left outside the scope of this project.
@@ -225,7 +225,7 @@ func #square(I):L                // arg -> Ix0
     Lx0 = lmul Lx0 Lx0           // Reassignment is fine
     lret Lx0
     
-func #sum_of(L,I,L):L             // array -> Lx0, size -> Lx0, transform -> Lx1
+func #sum_of(L,I,L):L            // array -> Lx0, size -> Lx0, transform -> Lx1
     Lx2 = 0L                     // Sum
     Lx3 = aiadd Lx0 Ix0          // End index
   check:
@@ -247,7 +247,7 @@ func main(I,L)                   // argc -> Ix0, argv -> Lx0
     iastore Lx1 12 4
     iastore Lx1 16 5
     
-    Lx0 = call sum_ff(L,I,L):L Lx1 5 &square
+    Lx0 = call sum_of (L,I,L):L Lx1 5 &square
     free Lx1
 ```
 
