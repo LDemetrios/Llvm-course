@@ -1,3 +1,5 @@
+package org.ldemetrios.simulator
+
 fun reify(funcs: List<ParsedFunction>): Program {
     val names = funcs.map(ParsedFunction::name).withIndex()
         .associate { (idx, value) -> value to idx + 1 }

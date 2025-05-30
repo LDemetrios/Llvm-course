@@ -1,3 +1,5 @@
+package org.ldemetrios.simulator
+
 import java.util.concurrent.ThreadLocalRandom
 
 fun Number.toI() = toInt()

@@ -1,4 +1,5 @@
-import RegisterON
+package org.ldemetrios.simulator
+
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
 
@@ -86,7 +87,7 @@ fun parse(file: String): ParsedFile {
     val lines = preprocess(file).lines()
         .map { it.split("//")[0] }
         .filter { it.isNotBlank() }
-        .apply { forEach(::println) }
+//        .apply { forEach(::println) }
     val imports = lines
         .takeWhile { !it.startsWith("func") }
         .map { it.trim() }

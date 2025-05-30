@@ -1,3 +1,5 @@
+package org.ldemetrios.simulator
+
 import java.io.File
 
 import com.github.ajalt.clikt.core.CliktCommand
