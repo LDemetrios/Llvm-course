@@ -24,9 +24,19 @@ run-stat: build-stat
   	rm log.txt
 
 clean:
-	rm -rf llvm build **/*.ll **/*.out
+	rm -rf llvm build **/*.ll **/*.out simulator.jar
 
 prepare: run-stat clean emit-llvm
 
-build-simulator:
+simulator.jar:
 	gradle shadowJar
+	cp build/libs/Llvm-course-1.0-SNAPSHOT-all.jar ./simulator.jar
+
+run-simple-example: simulator.jar
+	java -jar simulator.jar -d ./examples/simple.s
+
+run-graphics-example: simulator.jar
+	java -jar simulator.jar -nb ./examples/graphics.s
+
+simulator-help: simulator.jar
+	java -jar simulator.jar --help

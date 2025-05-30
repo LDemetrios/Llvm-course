@@ -1,5 +1,6 @@
 plugins {
     kotlin("jvm") version "2.2.0-RC"
+    java
     id("com.gradleup.shadow") version "8.3.0"
 }
 
@@ -9,6 +10,12 @@ version = "1.0-SNAPSHOT"
 repositories {
     mavenCentral()
     mavenLocal()
+}
+
+tasks.shadowJar {
+    manifest {
+        attributes["Main-Class"] = "org.ldemetrios.simulator.DriverKt"
+    }
 }
 
 dependencies {
