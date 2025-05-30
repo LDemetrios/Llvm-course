@@ -86,6 +86,7 @@ fun parse(file: String): ParsedFile {
     val lines = preprocess(file).lines()
         .map { it.split("//")[0] }
         .filter { it.isNotBlank() }
+        .apply { forEach(::println) }
     val imports = lines
         .takeWhile { !it.startsWith("func") }
         .map { it.trim() }
@@ -206,7 +207,8 @@ private fun String.parsePseudoInstruction(): PseudoInstruction {
             }
 
             else -> MovePI(
-                dst?.parseReg() ?: throw AssertionError("Single literal (or whatever `$it` is) is not a correct instruction"),
+                dst?.parseReg()
+                    ?: throw AssertionError("Single literal (or whatever `$it` is) is not a correct instruction"),
                 ImmON(it)
             )
         }
@@ -242,7 +244,7 @@ private fun String.parsePseudoInstruction(): PseudoInstruction {
 }
 
 fun String.parseReg(): RegisterON {
-    require(matches(REG_REGEX)) {"`$this` is not a register"}
+    require(matches(REG_REGEX)) { "`$this` is not a register" }
     val (ch, idx) = split("x")
     return RegisterON(ch[0], idx.toInt())
 }

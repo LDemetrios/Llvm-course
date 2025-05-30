@@ -27,3 +27,6 @@ clean:
 	rm -rf llvm build **/*.ll **/*.out
 
 prepare: run-stat clean emit-llvm
+
+build-simulator:
+	gradle shadowJar

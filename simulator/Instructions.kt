@@ -412,7 +412,7 @@ class DMove_ir(val src: D, val dst: Reg) : FLInst({ settingD(dst, src) })
 class PutPxl(val xReg: Reg, val yReg: Reg, val clrReg: Reg) : Instruction({
     withGraphicMemory {
         val frame = lastFrame()
-        set(frame.i(xReg) * SCREEN_WIDTH + frame.i(yReg), frame.i(clrReg))
+        set(frame.i(yReg) * SCREEN_WIDTH + frame.i(xReg), frame.i(clrReg))
     }
 })
 

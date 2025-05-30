@@ -23,5 +23,5 @@ fun preprocess(
         throw IOException("GCC preprocessing failed (exit $exitCode):\n$error")
     }
 
-    return output
+    return output.replace(";", "\n").replace(".", " ")
 }
