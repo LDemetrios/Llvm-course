@@ -10,7 +10,7 @@ func #sum_of(L,I,L):L            // array -> Lx0, size -> Lx0, transform -> Lx1
     Lx3 = ladd Lx0 Lx4           // End index
   check:
     Ix1 = lge Lx0 Lx3            // If start is greater or equal to end,
-    ifinz Ix1 end_cycle           // then jump to the end
+    ifinz Ix1 end_cycle          // then jump to the end
     Ix2 = iaload Lx0 0           // load an int
     Lx5 = dyncall Lx1 (I):L Ix2  // process a value
     Lx2 = ladd Lx2 Lx5           // accumulate
